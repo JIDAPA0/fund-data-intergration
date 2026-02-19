@@ -1,0 +1,163 @@
+================================================================================
+Database Explorer
+DB_URI: mysql+pymysql://root:@127.0.0.1:3306/raw_ft
+================================================================================
+All tables:
+  1. ft_avg_fund_return
+  2. ft_holdings
+  3. ft_region_allocation
+  4. ft_sector_allocation
+  5. ft_sector_region_processed
+  6. ft_static_detail
+
+================================================================================
+Table: ft_avg_fund_return
+================================================================================
+Schema:
+           column_name      data_type  nullable
+                    id         BIGINT     False
+             ft_ticker    VARCHAR(64)     False
+                ticker    VARCHAR(64)      True
+                  name   VARCHAR(512)      True
+           ticker_type    VARCHAR(32)      True
+        fund_name_perf   VARCHAR(512)      True
+avg_fund_return_1y_raw    VARCHAR(64)      True
+avg_fund_return_3y_raw    VARCHAR(64)      True
+    avg_fund_return_1y DECIMAL(12, 4)      True
+    avg_fund_return_3y DECIMAL(12, 4)      True
+                source    VARCHAR(64)      True
+          date_scraper           DATE      True
+                   url  VARCHAR(1024)      True
+            created_at      TIMESTAMP     False
+Sample Data (first 3 rows):
+ id  ft_ticker     ticker                                                                name ticker_type                                                      fund_name_perf avg_fund_return_1y_raw avg_fund_return_3y_raw  avg_fund_return_1y  avg_fund_return_3y          source date_scraper                                                                  url          created_at
+  1 0P00000Y1P 0P00000Y1P Standard Life Investment UK Smaller Companies Series 8 Pension Fund        Fund Standard Life Investment UK Smaller Companies Series 8 Pension Fund                 +3.48%                 +2.27%                3.48                2.27 Financial Times   2026-02-17 https://markets.ft.com/data/funds/tearsheet/performance?s=0P00000Y1P 2026-02-18 10:21:42
+  2 0P00000Z1W 0P00000Z1W                   Friends Life Stewardship Managed Cap Pension Fund        Fund                   Friends Life Stewardship Managed Cap Pension Fund                 +3.36%                 +6.59%                3.36                6.59 Financial Times   2026-02-17 https://markets.ft.com/data/funds/tearsheet/performance?s=0P00000Z1W 2026-02-18 10:21:42
+  3 0P00001029 0P00001029                   Clerical Medical FRP Pacific Initial Pension Fund        Fund                   Clerical Medical FRP Pacific Initial Pension Fund                +11.92%                 +9.91%               11.92                9.91 Financial Times   2026-02-17 https://markets.ft.com/data/funds/tearsheet/performance?s=0P00001029 2026-02-18 10:21:42
+
+================================================================================
+Table: ft_holdings
+================================================================================
+Schema:
+               column_name      data_type  nullable
+                        id         BIGINT     False
+                    ticker    VARCHAR(64)     False
+                      name   VARCHAR(512)      True
+               ticker_type    VARCHAR(32)      True
+           allocation_type    VARCHAR(64)      True
+              holding_name   VARCHAR(512)      True
+            holding_ticker   VARCHAR(128)      True
+              holding_type    VARCHAR(64)      True
+               holding_url  VARCHAR(1024)      True
+      portfolio_weight_pct DECIMAL(12, 6)      True
+top_10_holdings_weight_pct DECIMAL(12, 6)      True
+  other_holding_weight_pct DECIMAL(12, 6)      True
+                    source    VARCHAR(64)      True
+              date_scraper           DATE      True
+                       url  VARCHAR(1024)      True
+                created_at      TIMESTAMP     False
+Sample Data (first 3 rows):
+ id       ticker                                            name ticker_type allocation_type           holding_name holding_ticker holding_type                                                       holding_url  portfolio_weight_pct  top_10_holdings_weight_pct  other_holding_weight_pct          source date_scraper                                                                     url          created_at
+  1 LU1529784560 AXA World Funds - Robotech I Capitalisation CHF        Fund top_10_holdings    NVIDIA CorpNVDA:NSQ       NVDA:NSQ       Equity https://markets.ft.com/data/equities/tearsheet/summary?s=NVDA:NSQ                  6.80                       38.84                     61.16 Financial Times   2026-02-17 https://markets.ft.com/data/funds/tearsheet/holdings?s=LU1529784560:CHF 2026-02-18 10:21:46
+  2 LU1529784560 AXA World Funds - Robotech I Capitalisation CHF        Fund top_10_holdings Amazon.com IncAMZN:NSQ       AMZN:NSQ       Equity https://markets.ft.com/data/equities/tearsheet/summary?s=AMZN:NSQ                  4.77                       38.84                     61.16 Financial Times   2026-02-17 https://markets.ft.com/data/funds/tearsheet/holdings?s=LU1529784560:CHF 2026-02-18 10:21:46
+  3 LU1529784560 AXA World Funds - Robotech I Capitalisation CHF        Fund top_10_holdings   Alphabet Inc Class C            NaN      Unknown                                                               NaN                  3.68                       38.84                     61.16 Financial Times   2026-02-17 https://markets.ft.com/data/funds/tearsheet/holdings?s=LU1529784560:CHF 2026-02-18 10:21:46
+
+================================================================================
+Table: ft_region_allocation
+================================================================================
+Schema:
+    column_name      data_type  nullable
+             id         BIGINT     False
+      ft_ticker    VARCHAR(64)     False
+         ticker    VARCHAR(64)      True
+           name   VARCHAR(512)      True
+    ticker_type    VARCHAR(32)      True
+  category_name   VARCHAR(255)      True
+     weight_pct DECIMAL(12, 6)      True
+allocation_type    VARCHAR(64)      True
+  url_type_used    VARCHAR(64)      True
+         source    VARCHAR(64)      True
+   date_scraper           DATE      True
+            url  VARCHAR(1024)      True
+     created_at      TIMESTAMP     False
+Sample Data (first 3 rows):
+ id  ft_ticker     ticker                                                                name ticker_type category_name  weight_pct   allocation_type url_type_used          source date_scraper                                                               url          created_at
+  1 0P00000Y1P 0P00000Y1P Standard Life Investment UK Smaller Companies Series 8 Pension Fund        Fund      Americas         0.0 Region Allocation         funds Financial Times   2026-02-18 https://markets.ft.com/data/funds/tearsheet/holdings?s=0P00000Y1P 2026-02-18 10:13:27
+  2 0P00000Y1P 0P00000Y1P Standard Life Investment UK Smaller Companies Series 8 Pension Fund        Fund United States         0.0 Region Allocation         funds Financial Times   2026-02-18 https://markets.ft.com/data/funds/tearsheet/holdings?s=0P00000Y1P 2026-02-18 10:13:27
+  3 0P00000Y1P 0P00000Y1P Standard Life Investment UK Smaller Companies Series 8 Pension Fund        Fund        Canada         0.0 Region Allocation         funds Financial Times   2026-02-18 https://markets.ft.com/data/funds/tearsheet/holdings?s=0P00000Y1P 2026-02-18 10:13:27
+
+================================================================================
+Table: ft_sector_allocation
+================================================================================
+Schema:
+    column_name      data_type  nullable
+             id         BIGINT     False
+      ft_ticker    VARCHAR(64)     False
+         ticker    VARCHAR(64)      True
+           name   VARCHAR(512)      True
+    ticker_type    VARCHAR(32)      True
+  category_name   VARCHAR(255)      True
+     weight_pct DECIMAL(12, 6)      True
+allocation_type    VARCHAR(64)      True
+  url_type_used    VARCHAR(64)      True
+         source    VARCHAR(64)      True
+   date_scraper           DATE      True
+            url  VARCHAR(1024)      True
+     created_at      TIMESTAMP     False
+Sample Data (first 3 rows):
+ id  ft_ticker     ticker                                              name ticker_type      category_name  weight_pct   allocation_type url_type_used          source date_scraper                                                               url          created_at
+  1 0P00000Z1W 0P00000Z1W Friends Life Stewardship Managed Cap Pension Fund        Fund         Technology       20.71 Sector Allocation         funds Financial Times   2026-02-18 https://markets.ft.com/data/funds/tearsheet/holdings?s=0P00000Z1W 2026-02-18 10:13:21
+  2 0P00000Z1W 0P00000Z1W Friends Life Stewardship Managed Cap Pension Fund        Fund Financial Services       12.78 Sector Allocation         funds Financial Times   2026-02-18 https://markets.ft.com/data/funds/tearsheet/holdings?s=0P00000Z1W 2026-02-18 10:13:21
+  3 0P00000Z1W 0P00000Z1W Friends Life Stewardship Managed Cap Pension Fund        Fund         Healthcare        7.88 Sector Allocation         funds Financial Times   2026-02-18 https://markets.ft.com/data/funds/tearsheet/holdings?s=0P00000Z1W 2026-02-18 10:13:21
+
+================================================================================
+Table: ft_sector_region_processed
+================================================================================
+Schema:
+ column_name    data_type  nullable
+          id       BIGINT     False
+   ft_ticker  VARCHAR(64)     False
+      ticker  VARCHAR(64)      True
+        name VARCHAR(512)      True
+ ticker_type  VARCHAR(32)      True
+      status  VARCHAR(32)      True
+date_scraper         DATE      True
+  created_at    TIMESTAMP     False
+Sample Data (first 3 rows):
+ id  ft_ticker     ticker                                                                name ticker_type status date_scraper          created_at
+  1 0P00000Y1P 0P00000Y1P Standard Life Investment UK Smaller Companies Series 8 Pension Fund        Fund     ok   2026-02-18 2026-02-18 10:21:45
+  2 0P00000Z1W 0P00000Z1W                   Friends Life Stewardship Managed Cap Pension Fund        Fund     ok   2026-02-18 2026-02-18 10:21:45
+  3 0P00001029 0P00001029                   Clerical Medical FRP Pacific Initial Pension Fund        Fund     ok   2026-02-18 2026-02-18 10:21:45
+
+================================================================================
+Table: ft_static_detail
+================================================================================
+Schema:
+          column_name      data_type  nullable
+                   id         BIGINT     False
+            ft_ticker    VARCHAR(64)     False
+               ticker    VARCHAR(64)      True
+                 name   VARCHAR(512)      True
+          ticker_type    VARCHAR(32)      True
+ morningstar_category   VARCHAR(255)      True
+       inception_date           DATE      True
+             domicile   VARCHAR(128)      True
+          isin_number    VARCHAR(32)      True
+       assets_aum_raw   VARCHAR(128)      True
+assets_aum_full_value DECIMAL(24, 2)      True
+     assets_aum_value DECIMAL(24, 6)      True
+      assets_aum_unit    VARCHAR(16)      True
+  assets_aum_currency    VARCHAR(16)      True
+     assets_aum_as_of           DATE      True
+    expense_ratio_raw    VARCHAR(64)      True
+          expense_pct DECIMAL(10, 4)      True
+     income_treatment   VARCHAR(128)      True
+               source    VARCHAR(64)      True
+         date_scraper           DATE      True
+                  url  VARCHAR(1024)      True
+           created_at      TIMESTAMP     False
+Sample Data (first 3 rows):
+ id  ft_ticker     ticker                                                                name ticker_type         morningstar_category inception_date       domicile isin_number                assets_aum_raw  assets_aum_full_value  assets_aum_value assets_aum_unit assets_aum_currency assets_aum_as_of expense_ratio_raw  expense_pct income_treatment          source date_scraper                                                              url          created_at
+  1 0P00000Y1P 0P00000Y1P Standard Life Investment UK Smaller Companies Series 8 Pension Fund        Fund                          NaN     2002-01-16 United Kingdom        None                           NaN                    NaN               NaN             NaN                 NaN             None             0.99%         0.99     Accumulation Financial Times   2026-02-17 https://markets.ft.com/data/funds/tearsheet/summary?s=0P00000Y1P 2026-02-18 10:21:38
+  2 0P00000Z1W 0P00000Z1W                   Friends Life Stewardship Managed Cap Pension Fund        Fund  GBP Allocation 0-20% Equity     1998-10-30 United Kingdom        None 561.09m GBP As of Sep 30 2023            561090000.0            561.09               m                 GBP       2023-09-30             4.25%         4.25     Accumulation Financial Times   2026-02-17 https://markets.ft.com/data/funds/tearsheet/summary?s=0P00000Z1W 2026-02-18 10:21:38
+  3 0P00001029 0P00001029                   Clerical Medical FRP Pacific Initial Pension Fund        Fund Asia-Pacific ex-Japan Equity     2000-01-01 United Kingdom        None                           NaN                    NaN               NaN             NaN                 NaN             None               NaN          NaN     Accumulation Financial Times   2026-02-17 https://markets.ft.com/data/funds/tearsheet/summary?s=0P00001029 2026-02-18 10:21:38

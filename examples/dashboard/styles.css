@@ -1,0 +1,188 @@
+:root {
+  --bg: #f4f6f1;
+  --ink: #162219;
+  --muted: #637165;
+  --card: #ffffff;
+  --line: #d8dfd5;
+  --green: #17a24a;
+  --green2: #0f6d31;
+  --blue: #1f59d4;
+  --orange: #ef8d22;
+  --teal: #0ea7a1;
+  --red: #d0473d;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: "Sarabun", sans-serif;
+  color: var(--ink);
+  background: radial-gradient(1200px 600px at 10% -10%, #dff5e4, transparent),
+              radial-gradient(1100px 700px at 100% 0%, #dbe7ff, transparent),
+              var(--bg);
+}
+.page { max-width: 1150px; margin: 24px auto; padding: 0 16px 40px; }
+.hero h1 {
+  margin: 8px 0 4px;
+  font-family: "Chakra Petch", sans-serif;
+  font-size: clamp(1.6rem, 3vw, 2.4rem);
+}
+.hero p { margin: 0; color: var(--muted); }
+.badge {
+  display: inline-block; padding: 6px 10px; border-radius: 999px;
+  background: linear-gradient(90deg, #0a6a2f, #16ac4d);
+  color: #fff; font-weight: 700; letter-spacing: .06em; font-size: 12px;
+}
+.cards {
+  margin-top: 18px;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 14px 16px;
+  box-shadow: 0 8px 20px rgba(10, 30, 12, .06);
+}
+.card .label { color: var(--muted); font-size: .88rem; }
+.card .value { font: 700 1.5rem "Chakra Petch", sans-serif; margin-top: 6px; }
+.panel {
+  margin-top: 14px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 8px 20px rgba(10, 30, 12, .06);
+}
+.panel-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+.panel-head h2 { margin: 0; font: 700 1.1rem "Chakra Petch", sans-serif; }
+.panel-head span { color: var(--muted); font-size: .87rem; }
+.mini-tabs { display: inline-flex; gap: 6px; background: #eef2ee; padding: 3px; border-radius: 999px; }
+.mini-tab-btn {
+  border: 0; background: transparent; color: #4b5b4f;
+  font: 700 .74rem "Chakra Petch", sans-serif;
+  padding: 5px 10px; border-radius: 999px; cursor: pointer;
+}
+.mini-tab-btn.active { background: #1b271f; color: #fff; }
+.top-panel {
+  background: linear-gradient(165deg, #ffffff 10%, #f2f7f3 100%);
+  border-color: #ced8cf;
+}
+.tabs { margin-top: 10px; display: inline-flex; gap: 8px; background: #eef3ec; padding: 4px; border-radius: 10px; }
+.tab-btn {
+  border: 0; background: transparent; color: #314236; font: 600 .84rem "Sarabun", sans-serif;
+  padding: 8px 10px; border-radius: 8px; cursor: pointer;
+  transition: all .2s ease;
+}
+.tab-btn.active { background: #17231a; color: #fff; }
+.tab-btn:hover { transform: translateY(-1px); }
+.holding-grid { margin-top: 14px; display: grid; gap: 10px; }
+.holding-row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 12px;
+  border: 1px solid #dde5de;
+  background: linear-gradient(180deg, #ffffff, #f7faf8);
+  border-radius: 12px;
+  animation: riseIn .35s ease both;
+}
+.rank-chip {
+  width: 34px; height: 34px; border-radius: 10px;
+  background: #0f2219; color: #fff;
+  display: grid; place-items: center;
+  font: 700 .92rem "Chakra Petch", sans-serif;
+}
+.holding-main { min-width: 0; }
+.holding-line {
+  display: flex; align-items: center; gap: 8px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.holding-name {
+  font-size: 1rem; font-weight: 600;
+  overflow: hidden; text-overflow: ellipsis;
+}
+.ticker-badge {
+  background: #e7edf8; color: #173f8f;
+  border: 1px solid #d4dff5;
+  border-radius: 999px;
+  padding: 2px 8px;
+  font: 700 .72rem "Chakra Petch", sans-serif;
+  letter-spacing: .02em;
+  flex-shrink: 0;
+}
+.mini-track {
+  margin-top: 7px;
+  height: 10px;
+  border-radius: 999px;
+  background: #eaf0ea;
+  overflow: hidden;
+}
+.mini-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #0a1135, #12389f 45%, #19bc56 100%);
+  box-shadow: inset 0 -1px 0 rgba(255,255,255,.3);
+}
+.holding-value {
+  text-align: right;
+  min-width: 130px;
+}
+.value-pill {
+  display: inline-block;
+  padding: 6px 10px;
+  border-radius: 10px;
+  background: #122117;
+  color: #ebfff1;
+  font: 700 .86rem "Chakra Petch", sans-serif;
+}
+.value-sub {
+  margin-top: 4px;
+  color: #5f6f62;
+  font-size: .78rem;
+}
+@keyframes riseIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.chart-tools {
+  margin-top: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  color: var(--muted);
+  font-size: .85rem;
+}
+.donut-wrap { margin-top: 8px; display: grid; grid-template-columns: 170px 1fr; gap: 16px; align-items: center; }
+.donut {
+  width: 170px; height: 170px; border-radius: 50%; position: relative;
+  background: conic-gradient(var(--blue) 0 40%, var(--teal) 40% 65%, var(--orange) 65% 85%, var(--red) 85% 100%);
+}
+.donut::after {
+  content: ""; position: absolute; inset: 38px;
+  background: #fff; border-radius: 50%; border: 1px solid var(--line);
+}
+.legend { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; max-height: 260px; overflow: auto; }
+.legend li { display: grid; grid-template-columns: 12px 1fr auto; align-items: center; gap: 8px; font-size: .9rem; }
+.swatch { width: 12px; height: 12px; border-radius: 3px; }
+.search-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.search-grid h3 { margin: 6px 0; font: 600 .98rem "Chakra Petch", sans-serif; }
+input {
+  width: 100%; border: 1px solid var(--line); border-radius: 10px;
+  padding: 10px 12px; font: inherit; margin-bottom: 8px;
+}
+table { width: 100%; border-collapse: collapse; font-size: .85rem; }
+th, td { padding: 8px 6px; border-bottom: 1px solid #edf1ec; }
+th { text-align: left; color: var(--muted); font-weight: 600; }
+.r { text-align: right; }
+@media (max-width: 900px) {
+  .cards { grid-template-columns: 1fr 1fr; }
+  .two-col, .search-grid { grid-template-columns: 1fr; }
+  .chart-tools { justify-content: flex-start; flex-wrap: wrap; }
+  .holding-row { grid-template-columns: auto 1fr; }
+  .holding-value { grid-column: 2; text-align: left; min-width: 0; }
+}

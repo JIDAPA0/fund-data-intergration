@@ -1,0 +1,163 @@
+================================================================================
+Database Explorer
+DB_URI: mysql+pymysql://root:@127.0.0.1:3307/raw_thai_funds
+================================================================================
+All tables:
+  1. funds_allocations
+  2. funds_codes
+  3. funds_daily
+  4. funds_fee
+  5. funds_holding
+  6. funds_master_info
+  7. funds_statistics
+
+================================================================================
+Table: funds_allocations
+================================================================================
+Schema:
+column_name      data_type  nullable
+  fund_code    VARCHAR(50)      True
+       name   VARCHAR(255)      True
+       type    VARCHAR(50)      True
+     source    VARCHAR(20)      True
+    percent DECIMAL(10, 4)      True
+ as_of_date           DATE      True
+ source_url           TEXT      True
+ scraped_at      TIMESTAMP      True
+Sample Data (first 3 rows):
+fund_code                        name        type source  percent as_of_date                                source_url          scraped_at
+   1AM-TG              พันธบัตรรัฐบาล asset_alloc   None 100.2659 2025-12-01 https://www.finnomena.com/fund/F000002J2X 2026-02-13 00:19:14
+   1AM-TG   เงินฝากธนาคาร P/N และ B/E asset_alloc   None   1.2779 2025-12-01 https://www.finnomena.com/fund/F000002J2X 2026-02-13 00:19:14
+   1AM-TG สินทรัพย์อื่นๆ/หนี้สินอื่นๆ asset_alloc   None  -1.5437 2025-12-01 https://www.finnomena.com/fund/F000002J2X 2026-02-13 00:19:14
+
+================================================================================
+Table: funds_codes
+================================================================================
+Schema:
+  column_name   data_type  nullable
+    fund_code VARCHAR(50)     False
+         type VARCHAR(50)      True
+         code VARCHAR(50)     False
+factsheet_url        TEXT      True
+   scraped_at   TIMESTAMP      True
+Sample Data (first 3 rows):
+  fund_code type         code                                                                 factsheet_url          scraped_at
+1GLOBALBOND ISIN IE00B11XZ210 https://secdocumentstorage.blob.core.windows.net/fundfactsheet/M0430_2550.pdf 2026-02-13 00:18:52
+1GLOBALBOND ISIN LU0106258741 https://secdocumentstorage.blob.core.windows.net/fundfactsheet/M0430_2550.pdf 2026-02-13 00:18:52
+    1US-OPP ISIN US9229083632 https://secdocumentstorage.blob.core.windows.net/fundfactsheet/M0235_2551.pdf 2026-02-13 00:18:52
+
+================================================================================
+Table: funds_daily
+================================================================================
+Schema:
+column_name      data_type  nullable
+  fund_code    VARCHAR(50)     False
+   nav_date           DATE     False
+  nav_value DECIMAL(18, 4)      True
+        bid DECIMAL(18, 4)      True
+      offer DECIMAL(18, 4)      True
+        aum DECIMAL(25, 2)      True
+     source    VARCHAR(20)      True
+ scraped_at      TIMESTAMP      True
+Sample Data (first 3 rows):
+   fund_code   nav_date  nav_value  bid offer         aum    source          scraped_at
+1AM-DAILY-RA 2007-11-09    10.0006 None  None 181538179.0 finnomena 2026-02-13 00:25:51
+1AM-DAILY-RA 2007-11-12    10.0027 None  None 181575916.0 finnomena 2026-02-13 00:25:51
+1AM-DAILY-RA 2007-11-13    10.0034 None  None 199881879.0 finnomena 2026-02-13 00:25:51
+
+================================================================================
+Table: funds_fee
+================================================================================
+Schema:
+         column_name      data_type  nullable
+           fund_code    VARCHAR(50)     False
+       front_end_max DECIMAL(10, 4)      True
+    front_end_actual DECIMAL(10, 4)      True
+        back_end_max DECIMAL(10, 4)      True
+     back_end_actual DECIMAL(10, 4)      True
+      management_max DECIMAL(10, 4)      True
+   management_actual DECIMAL(10, 4)      True
+             ter_max DECIMAL(10, 4)      True
+          ter_actual DECIMAL(10, 4)      True
+    switching_in_max DECIMAL(10, 4)      True
+ switching_in_actual DECIMAL(10, 4)      True
+   switching_out_max DECIMAL(10, 4)      True
+switching_out_actual DECIMAL(10, 4)      True
+     min_initial_buy DECIMAL(20, 2)      True
+        min_next_buy DECIMAL(20, 2)      True
+          source_url           TEXT      True
+          scraped_at      TIMESTAMP      True
+Sample Data (first 3 rows):
+    fund_code  front_end_max  front_end_actual  back_end_max  back_end_actual  management_max  management_actual  ter_max  ter_actual  switching_in_max  switching_in_actual  switching_out_max  switching_out_actual  min_initial_buy  min_next_buy                                source_url          scraped_at
+ 1AM-DAILY-RA            0.0               0.0           0.0              0.0            0.93               0.05     4.28        0.12               0.0                  0.0                0.0                   0.0              1.0           1.0 https://www.finnomena.com/fund/F0000028VO 2026-02-13 00:18:51
+1AM-DAILY-SSF            0.0               0.0           0.0              0.0            1.07               0.05     4.28        0.12               0.0                  0.0                0.0                   0.0              1.0           1.0 https://www.finnomena.com/fund/F0000167VS 2026-02-13 00:18:51
+       1AM-TG            0.0               0.0           0.0              0.0            0.93               0.31     4.28        0.45               0.0                  0.0                0.0                   0.0           1000.0        1000.0 https://www.finnomena.com/fund/F000002J2X 2026-02-13 00:18:51
+
+================================================================================
+Table: funds_holding
+================================================================================
+Schema:
+ column_name      data_type  nullable
+   fund_code    VARCHAR(50)      True
+      symbol    VARCHAR(50)      True
+        name   VARCHAR(255)      True
+        type    VARCHAR(50)      True
+      sector    VARCHAR(50)      True
+     percent DECIMAL(10, 4)      True
+  as_of_date           DATE      True
+  source_url           TEXT      True
+holding_type    VARCHAR(20)      True
+  scraped_at      TIMESTAMP      True
+Sample Data (first 3 rows):
+    fund_code symbol                                                  name type sector  percent as_of_date                                           source_url holding_type          scraped_at
+1AM-DAILY-SSF   None ASIA SERMKIJ LEASING PUBLIC COMPANY LIMITED (ASK25DB) Bond   None     1.20 2025-09-30 https://www.wealthmagik.com/funds/1AM-DAILY-SSF/port         None 2026-02-13 00:18:53
+1AM-DAILY-SSF   None                           BANK OF THAILAND (CB25D04A) Bond   None     3.61 2025-09-30 https://www.wealthmagik.com/funds/1AM-DAILY-SSF/port         None 2026-02-13 00:18:53
+1AM-DAILY-SSF   None                           BANK OF THAILAND (CB25D11B) Bond   None     0.30 2025-09-30 https://www.wealthmagik.com/funds/1AM-DAILY-SSF/port         None 2026-02-13 00:18:53
+
+================================================================================
+Table: funds_master_info
+================================================================================
+Schema:
+   column_name    data_type  nullable
+     fund_code  VARCHAR(50)     False
+  full_name_th         TEXT      True
+  full_name_en         TEXT      True
+           amc VARCHAR(100)      True
+      category VARCHAR(100)      True
+    risk_level      INTEGER      True
+   is_dividend VARCHAR(100)      True
+inception_date         DATE      True
+      currency  VARCHAR(10)      True
+       country  VARCHAR(50)      True
+          isin  VARCHAR(20)      True
+   fund_status  VARCHAR(20)      True
+    source_url         TEXT      True
+    scraped_at    TIMESTAMP      True
+Sample Data (first 3 rows):
+    fund_code                                                      full_name_th                full_name_en   amc                   category  risk_level is_dividend inception_date currency  country         isin fund_status                                source_url          scraped_at
+ 1AM-DAILY-RA กองทุนเปิดวรรณเดลี่ หน่วยลงทุนชนิดสะสมมูลค่า สำหรับผู้ลงทุนทั่วไป             1 A.M. Daily RA ONEAM       Money Market General           2     ไม่จ่าย     2007-11-09      THB Thailand TH2805A10001      active https://www.finnomena.com/fund/F0000028VO 2026-02-13 00:18:47
+1AM-DAILY-SSF                     กองทุนเปิดวรรณเดลี่ หน่วยลงทุนชนิดเพื่อการออม            1 A.M. Daily SSF ONEAM       Money Market General           2     ไม่จ่าย     2020-12-14      THB Thailand TH2805B10009      active https://www.finnomena.com/fund/F0000167VS 2026-02-13 00:18:47
+       1AM-TG                                         กองทุนเปิดวรรณพันธบัตรไทย 1 A.M. Thai Government Bond ONEAM Short Term Government Bond           3     ไม่จ่าย     2008-11-27      THB Thailand TH2572010001      active https://www.finnomena.com/fund/F000002J2X 2026-02-13 00:18:47
+
+================================================================================
+Table: funds_statistics
+================================================================================
+Schema:
+      column_name      data_type  nullable
+        fund_code    VARCHAR(50)     False
+       as_of_date           DATE      True
+     sharpe_ratio DECIMAL(10, 4)      True
+            alpha DECIMAL(10, 4)      True
+             beta DECIMAL(10, 4)      True
+     max_drawdown DECIMAL(10, 4)      True
+recovering_period DECIMAL(10, 4)      True
+   tracking_error DECIMAL(10, 4)      True
+   turnover_ratio DECIMAL(10, 4)      True
+       fx_hedging           TEXT      True
+          sec_url           TEXT      True
+       scraped_at      TIMESTAMP      True
+Sample Data (first 3 rows):
+    fund_code as_of_date sharpe_ratio alpha beta  max_drawdown recovering_period tracking_error  turnover_ratio fx_hedging                                                     sec_url          scraped_at
+ 1AM-DAILY-RA 2025-12-30         None  None None           0.0              None           None            2.64        0.0  https://fundcheck.sec.or.th/fund-detail;funds=1AM-DAILY-RA 2026-02-13 00:18:51
+1AM-DAILY-SSF 2025-12-30         None  None None           0.0              None           None            2.64        0.0 https://fundcheck.sec.or.th/fund-detail;funds=1AM-DAILY-SSF 2026-02-13 00:18:51
+       1AM-TG       None         None  None None           NaN              None           None             NaN        NaN        https://fundcheck.sec.or.th/fund-detail;funds=1AM-TG 2026-02-13 00:18:51

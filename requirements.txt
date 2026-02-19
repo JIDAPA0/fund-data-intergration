@@ -1,0 +1,7 @@
+pandas
+sqlalchemy
+pymysql
+prefect>=2.16
+python-dotenv
+fastapi
+uvicorn

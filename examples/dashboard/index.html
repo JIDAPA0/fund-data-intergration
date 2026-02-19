@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Thai Fund Traceability Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="page">
+    <header class="hero">
+      <div class="badge">THAI FUND TRACEABILITY</div>
+      <h1>กองทุนไทยถืออะไรอยู่จริงแค่ไหน</h1>
+      <p>Multi-layer Exposure: Thai Fund → Master Fund → Real Holdings</p>
+    </header>
+
+    <section class="cards" id="summary-cards"></section>
+
+    <section class="panel top-panel">
+      <div class="panel-head">
+        <h2 id="top-title">Top 10 หุ้นในไทย</h2>
+        <span id="top-subtitle">มุมมองความนิยมในพอร์ตของ บลจ. ไทย (total_thai_fund_value)</span>
+      </div>
+      <div class="tabs">
+        <button id="tab-thai" class="tab-btn active" type="button">Top 10 หุ้นในไทย</button>
+        <button id="tab-global" class="tab-btn" type="button">Top 10 หุ้นโลก (ไส้ใน)</button>
+      </div>
+      <div id="top-holdings" class="holding-grid"></div>
+    </section>
+
+    <section class="chart-tools">
+      <span>Percent Mode</span>
+      <div class="mini-tabs">
+        <button id="pct-shown" class="mini-tab-btn active" type="button">% of shown set</button>
+        <button id="pct-all" class="mini-tab-btn" type="button">% of all universe</button>
+      </div>
+    </section>
+
+    <section class="two-col">
+      <article class="panel">
+        <div class="panel-head">
+          <h2>Sector Allocation</h2>
+          <div class="mini-tabs">
+            <button id="sector-all" class="mini-tab-btn active" type="button">ALL</button>
+            <button id="sector-top10" class="mini-tab-btn" type="button">TOP10</button>
+          </div>
+        </div>
+        <div class="donut-wrap">
+          <div class="donut" id="sector-donut"></div>
+          <ul class="legend" id="sector-legend"></ul>
+        </div>
+      </article>
+
+      <article class="panel">
+        <div class="panel-head">
+          <h2>Country Allocation</h2>
+          <div class="mini-tabs">
+            <button id="country-all" class="mini-tab-btn active" type="button">ALL</button>
+            <button id="country-top10" class="mini-tab-btn" type="button">TOP10</button>
+          </div>
+        </div>
+        <div class="donut-wrap">
+          <div class="donut" id="country-donut"></div>
+          <ul class="legend" id="country-legend"></ul>
+        </div>
+      </article>
+    </section>
+
+    <section class="panel search-panel">
+      <div class="panel-head">
+        <h2>ค้นหาแบบสองทิศทาง</h2>
+      </div>
+      <div class="search-grid">
+        <div>
+          <h3>Fund → Holdings</h3>
+          <input id="fund-input" type="text" placeholder="เช่น 1US-OPP" />
+          <table>
+            <thead><tr><th>Holding</th><th class="r">Weight%</th><th class="r">Value (THB)</th></tr></thead>
+            <tbody id="fund-results"></tbody>
+          </table>
+        </div>
+        <div>
+          <h3>Asset → Funds</h3>
+          <input id="asset-input" type="text" placeholder="เช่น NVIDIA" />
+          <table>
+            <thead><tr><th>Fund</th><th class="r">Weight%</th><th class="r">Value (THB)</th></tr></thead>
+            <tbody id="asset-results"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
