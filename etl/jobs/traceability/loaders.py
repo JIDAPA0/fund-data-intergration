@@ -51,6 +51,22 @@ def table_exists(engine: Engine, table_name: str) -> bool:
     return bool(row and int(row[0]) > 0)
 
 
+def table_columns(engine: Engine, table_name: str) -> set[str]:
+    with engine.connect() as conn:
+        rows = conn.execute(
+            text(
+                """
+                SELECT column_name
+                FROM information_schema.columns
+                WHERE table_schema = DATABASE()
+                  AND table_name = :table_name
+                """
+            ),
+            {"table_name": table_name},
+        ).fetchall()
+    return {str(r[0]).lower() for r in rows}
+
+
 def load_source_data(thai_engine: Engine, global_engine: Engine, fx_engine: Engine) -> Dataset:
     thai_funds = load_df(
         thai_engine,
@@ -166,9 +182,12 @@ def load_source_data(thai_engine: Engine, global_engine: Engine, fx_engine: Engi
         """,
     )
 
+    sector_cols = table_columns(global_engine, "ft_sector_allocation")
+    sector_category_col = "category_name" if "category_name" in sector_cols else "sector_name"
+    sector_weight_col = "weight_pct" if "weight_pct" in sector_cols else "sector_weight_pct"
     ft_sector = load_df(
         global_engine,
-        """
+        f"""
         WITH latest AS (
             SELECT ticker, MAX(date_scraper) AS date_scraper
             FROM ft_sector_allocation
@@ -176,8 +195,8 @@ def load_source_data(thai_engine: Engine, global_engine: Engine, fx_engine: Engi
         )
         SELECT
             a.ticker,
-            a.category_name,
-            a.weight_pct,
+            a.{sector_category_col} AS category_name,
+            a.{sector_weight_col} AS weight_pct,
             a.date_scraper
         FROM ft_sector_allocation a
         JOIN latest l
@@ -186,9 +205,12 @@ def load_source_data(thai_engine: Engine, global_engine: Engine, fx_engine: Engi
         """,
     )
 
+    region_cols = table_columns(global_engine, "ft_region_allocation")
+    region_category_col = "category_name" if "category_name" in region_cols else "region_name"
+    region_weight_col = "weight_pct" if "weight_pct" in region_cols else "region_weight_pct"
     ft_region = load_df(
         global_engine,
-        """
+        f"""
         WITH latest AS (
             SELECT ticker, MAX(date_scraper) AS date_scraper
             FROM ft_region_allocation
@@ -196,8 +218,8 @@ def load_source_data(thai_engine: Engine, global_engine: Engine, fx_engine: Engi
         )
         SELECT
             a.ticker,
-            a.category_name,
-            a.weight_pct,
+            a.{region_category_col} AS category_name,
+            a.{region_weight_col} AS weight_pct,
             a.date_scraper
         FROM ft_region_allocation a
         JOIN latest l
@@ -206,23 +228,36 @@ def load_source_data(thai_engine: Engine, global_engine: Engine, fx_engine: Engi
         """,
     )
 
+    return_cols = table_columns(global_engine, "ft_avg_fund_return")
+    has_ft_ticker = "ft_ticker" in return_cols
+    return_key = "ft_ticker" if has_ft_ticker else "ticker"
+    return_date_col = "date_scraper" if "date_scraper" in return_cols else "as_of_date"
+    return_1y_col = "avg_fund_return_1y" if "avg_fund_return_1y" in return_cols else "avg_return_1y_pct"
+    return_3y_col = "avg_fund_return_3y" if "avg_fund_return_3y" in return_cols else "NULL"
+    return_created_col = "created_at" if "created_at" in return_cols else return_date_col
+
     ft_return = load_df(
         global_engine,
-        """
+        f"""
         WITH ranked AS (
             SELECT
-                ft_ticker,
+                {return_key} AS key_ticker,
                 ticker,
-                avg_fund_return_1y,
-                avg_fund_return_3y,
-                date_scraper,
+                {return_1y_col} AS avg_fund_return_1y,
+                {return_3y_col} AS avg_fund_return_3y,
+                {return_date_col} AS date_scraper,
                 ROW_NUMBER() OVER (
-                    PARTITION BY ft_ticker
-                    ORDER BY date_scraper DESC, created_at DESC
+                    PARTITION BY {return_key}
+                    ORDER BY {return_date_col} DESC, {return_created_col} DESC
                 ) AS rn
             FROM ft_avg_fund_return
         )
-        SELECT ft_ticker, ticker, avg_fund_return_1y, avg_fund_return_3y, date_scraper
+        SELECT
+            key_ticker AS ft_ticker,
+            ticker,
+            avg_fund_return_1y,
+            avg_fund_return_3y,
+            date_scraper
         FROM ranked
         WHERE rn = 1
         """,
