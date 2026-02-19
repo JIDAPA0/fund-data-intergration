@@ -16,3 +16,4 @@ class Dataset:
     ft_sector: pd.DataFrame
     ft_region: pd.DataFrame
     ft_return: pd.DataFrame
+    fx_rates: pd.DataFrame

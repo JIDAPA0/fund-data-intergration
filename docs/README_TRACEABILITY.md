@@ -55,6 +55,12 @@ Optional env vars:
 THAI_DB_URI='mysql+pymysql://root:@127.0.0.1:3307/raw_thai_funds'
 GLOBAL_DB_URI='mysql+pymysql://root:@127.0.0.1:3306/raw_ft'
 MART_DB_URI='mysql+pymysql://root:@127.0.0.1:3307/fund_traceability'
+FX_DB_URI='mysql+pymysql://root:@127.0.0.1:3307/fund_traceability'
+FX_TABLE='daily_fx_rates'
+FX_BASE_CCY='THB'
+FX_API_URL='https://open.er-api.com/v6/latest/USD'
+FX_STALE_MAX_DAYS='3'
+FX_MISSING_MAX_PCT='5.0'
 TOP_N='10'
 ```
 
@@ -65,4 +71,20 @@ SELECT * FROM vw_dashboard_cards;
 SELECT * FROM vw_top_holdings;
 SELECT * FROM vw_sector_allocation LIMIT 10;
 SELECT * FROM vw_country_allocation LIMIT 10;
+SELECT * FROM vw_nav_aum_thb LIMIT 10;
 ```
+
+## Missing Data Policy
+
+- `aum` missing (`NULL`) is treated as `0` for value calculations.
+- `true_value_thb` is forced to numeric and missing values become `0`.
+- Weight fields used in calculations are coerced to numeric; missing values become `0`.
+- `coverage_ratio` is clipped to `[0, 1]`.
+- FX conversion is optional:
+  - If `daily_fx_rates` exists, non-THB funds are converted to THB before calculating `true_value_thb`.
+  - If FX rate is missing, fallback rate `1.0` is used and row is marked with `fx_rate_status='default_1_missing_fx'`.
+- FX provider policy:
+  - Daily FX fetch uses a single provider: `open.er-api.com`.
+  - If provider is unavailable, pipeline can continue only when latest FX snapshot age is within `FX_STALE_MAX_DAYS`; otherwise the run fails.
+
+This policy prevents null-propagation from breaking aggregates and validation, and makes PASS/FAIL checks deterministic.

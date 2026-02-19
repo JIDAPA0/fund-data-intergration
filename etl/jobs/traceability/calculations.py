@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pandas as pd
 
-from .config import TOP_N
+from .config import FX_BASE_CCY, TOP_N
 from .models import Dataset
 from .utils import is_country_label, to_float
 
@@ -12,6 +12,82 @@ def _weighted_avg(group: pd.DataFrame, col: str) -> float | None:
     if g.empty:
         return None
     return float((g[col] * g["aum"]).sum() / g["aum"].sum())
+
+
+def _prepare_nav_with_fx(ds: Dataset) -> pd.DataFrame:
+    nav = ds.thai_nav_aum.copy()
+    nav["aum_native"] = to_float(nav["aum"]).fillna(0.0)
+    nav["nav_as_of_date"] = pd.to_datetime(nav["nav_as_of_date"], errors="coerce").dt.date
+
+    fund_ccy = ds.thai_funds[["fund_code", "currency"]].drop_duplicates("fund_code").copy()
+    fund_ccy["fund_currency"] = fund_ccy["currency"].fillna(FX_BASE_CCY).astype(str).str.strip().str.upper()
+    fund_ccy = fund_ccy.drop(columns=["currency"])
+
+    nav = nav.merge(fund_ccy, on="fund_code", how="left")
+    nav["fund_currency"] = nav["fund_currency"].fillna(FX_BASE_CCY)
+
+    fx = ds.fx_rates.copy()
+    if fx.empty:
+        nav["fx_rate_to_thb"] = 1.0
+        nav["fx_rate_date"] = nav["nav_as_of_date"]
+        nav["fx_rate_status"] = "default_1_no_fx_table"
+    else:
+        fx["date_rate"] = pd.to_datetime(fx["date_rate"], errors="coerce").dt.date
+        fx["from_ccy"] = fx["from_ccy"].fillna("").astype(str).str.strip().str.upper()
+        fx["rate_to_thb"] = to_float(fx["rate_to_thb"])
+        fx = fx[fx["date_rate"].notna() & fx["from_ccy"].ne("") & fx["rate_to_thb"].notna()].copy()
+
+        fx_exact = fx[["from_ccy", "date_rate", "rate_to_thb"]].rename(
+            columns={"date_rate": "fx_rate_date_exact", "rate_to_thb": "fx_rate_exact"}
+        )
+        nav = nav.merge(
+            fx_exact,
+            left_on=["fund_currency", "nav_as_of_date"],
+            right_on=["from_ccy", "fx_rate_date_exact"],
+            how="left",
+        )
+        nav = nav.drop(columns=["from_ccy"], errors="ignore")
+
+        fx_latest = (
+            fx.sort_values(["from_ccy", "date_rate"])
+            .groupby("from_ccy", as_index=False)
+            .tail(1)[["from_ccy", "date_rate", "rate_to_thb"]]
+            .rename(columns={"date_rate": "fx_rate_date_latest", "rate_to_thb": "fx_rate_latest"})
+        )
+        nav = nav.merge(fx_latest, left_on="fund_currency", right_on="from_ccy", how="left")
+        nav = nav.drop(columns=["from_ccy"], errors="ignore")
+
+        nav["fx_rate_to_thb"] = (
+            nav["fx_rate_exact"].where(nav["fx_rate_exact"].notna(), nav["fx_rate_latest"]).fillna(1.0)
+        )
+        nav["fx_rate_date"] = nav["fx_rate_date_exact"].where(
+            nav["fx_rate_exact"].notna(), nav["fx_rate_date_latest"]
+        )
+        nav["fx_rate_date"] = nav["fx_rate_date"].fillna(nav["nav_as_of_date"])
+        nav["fx_rate_status"] = "exact_or_latest"
+        nav.loc[nav["fund_currency"] == FX_BASE_CCY, "fx_rate_status"] = "base_currency"
+        nav.loc[
+            (nav["fund_currency"] != FX_BASE_CCY)
+            & nav["fx_rate_exact"].isna()
+            & nav["fx_rate_latest"].isna(),
+            "fx_rate_status",
+        ] = "default_1_missing_fx"
+
+    nav.loc[nav["fund_currency"] == FX_BASE_CCY, "fx_rate_to_thb"] = 1.0
+    nav["aum"] = (nav["aum_native"] * nav["fx_rate_to_thb"]).fillna(0.0)
+
+    return nav[
+        [
+            "fund_code",
+            "nav_as_of_date",
+            "aum",
+            "aum_native",
+            "fund_currency",
+            "fx_rate_to_thb",
+            "fx_rate_date",
+            "fx_rate_status",
+        ]
+    ]
 
 
 def build_exposure_tables(ds: Dataset, bridge: pd.DataFrame) -> dict[str, pd.DataFrame]:
@@ -44,8 +120,10 @@ def build_exposure_tables(ds: Dataset, bridge: pd.DataFrame) -> dict[str, pd.Dat
 
     exp_stock["true_weight_pct"] = (exp_stock["feeder_weight_pct_norm"] * exp_stock["portfolio_weight_pct"]) / 100.0
 
-    nav = ds.thai_nav_aum.copy()
-    nav["aum"] = to_float(nav["aum"]).fillna(0.0)
+    nav = _prepare_nav_with_fx(ds)
+    nav_native = nav[
+        ["fund_code", "nav_as_of_date", "aum_native", "fund_currency"]
+    ].drop_duplicates(["fund_code"], keep="first")
     exp_stock = exp_stock.merge(nav, on="fund_code", how="left")
     exp_stock["aum"] = to_float(exp_stock["aum"]).fillna(0.0)
     exp_stock["true_value_thb"] = ((exp_stock["aum"] * exp_stock["true_weight_pct"]) / 100.0).fillna(0.0)
@@ -64,6 +142,11 @@ def build_exposure_tables(ds: Dataset, bridge: pd.DataFrame) -> dict[str, pd.Dat
         "portfolio_weight_pct",
         "true_weight_pct",
         "aum",
+        "aum_native",
+        "fund_currency",
+        "fx_rate_to_thb",
+        "fx_rate_date",
+        "fx_rate_status",
         "true_value_thb",
         "nav_as_of_date",
         "date_scraper",
@@ -95,6 +178,11 @@ def build_exposure_tables(ds: Dataset, bridge: pd.DataFrame) -> dict[str, pd.Dat
         "feeder_weight_pct_norm",
         "true_weight_pct",
         "aum",
+        "aum_native",
+        "fund_currency",
+        "fx_rate_to_thb",
+        "fx_rate_date",
+        "fx_rate_status",
         "true_value_thb",
         "nav_as_of_date",
         "date_scraper",
@@ -121,6 +209,11 @@ def build_exposure_tables(ds: Dataset, bridge: pd.DataFrame) -> dict[str, pd.Dat
         "feeder_weight_pct_norm",
         "true_weight_pct",
         "aum",
+        "aum_native",
+        "fund_currency",
+        "fx_rate_to_thb",
+        "fx_rate_date",
+        "fx_rate_status",
         "true_value_thb",
         "is_country_like",
         "nav_as_of_date",
@@ -220,6 +313,7 @@ def build_exposure_tables(ds: Dataset, bridge: pd.DataFrame) -> dict[str, pd.Dat
     country_topn = country_agg.head(TOP_N).copy()
 
     return {
+        "stg_nav_aum_native": nav_native,
         "bridge_thai_master": bridge,
         "fact_effective_exposure_stock": exp_stock,
         "fact_effective_exposure_sector": exp_sector,

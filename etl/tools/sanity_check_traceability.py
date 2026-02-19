@@ -129,7 +129,7 @@ CHECKS = [
 ]
 
 
-def run_checks(host: str, port: int, user: str, password: str, database: str) -> int:
+def run_checks(host: str, port: int, user: str, password: str, database: str, fx_missing_max_pct: float) -> int:
     conn = pymysql.connect(
         host=host,
         port=port,
@@ -162,6 +162,45 @@ def run_checks(host: str, port: int, user: str, password: str, database: str) ->
                 if not ok:
                     failures.append((c.name, value, c.max_allowed))
 
+            # FX missing-rate alert check
+            cur.execute(
+                """
+                SELECT COUNT(*) AS c
+                FROM information_schema.views
+                WHERE table_schema = DATABASE()
+                  AND table_name = 'vw_nav_aum_thb'
+                """
+            )
+            view_exists = int((cur.fetchone() or {}).get("c", 0)) == 1
+            if not view_exists:
+                failures.append(("vw_nav_aum_thb_missing", 1.0, 0.0))
+                print(
+                    f"{'vw_nav_aum_thb_missing':36} {'FAIL':7} {1.0:14.4f} {0.0:12.4f}  "
+                    "required view for FX quality check not found"
+                )
+            else:
+                cur.execute(
+                    """
+                    SELECT
+                      CASE WHEN COUNT(*) = 0 THEN 0
+                           ELSE (
+                             SUM(CASE WHEN fund_currency <> 'THB' AND fx_rate_status = 'default_1_missing_fx' THEN 1 ELSE 0 END)
+                             * 100.0 / COUNT(*)
+                           )
+                      END AS missing_fx_pct
+                    FROM vw_nav_aum_thb
+                    """
+                )
+                missing_fx_pct = float((cur.fetchone() or {}).get("missing_fx_pct", 0) or 0)
+                ok = missing_fx_pct <= fx_missing_max_pct
+                status = "PASS" if ok else "FAIL"
+                print(
+                    f"{'fx_missing_rate_pct':36} {status:7} {missing_fx_pct:14.4f} {fx_missing_max_pct:12.4f}  "
+                    "percent of rows using default_1_missing_fx (non-THB only)"
+                )
+                if not ok:
+                    failures.append(("fx_missing_rate_pct", missing_fx_pct, fx_missing_max_pct))
+
             print("-" * 92)
             if failures:
                 print("RESULT: FAIL")
@@ -182,10 +221,16 @@ def main() -> int:
     parser.add_argument("--user", default=os.getenv("MART_DB_USER", "root"))
     parser.add_argument("--password", default=os.getenv("MART_DB_PASSWORD", ""))
     parser.add_argument("--database", default=os.getenv("MART_DB_NAME", "fund_traceability"))
+    parser.add_argument(
+        "--fx-missing-max-pct",
+        type=float,
+        default=float(os.getenv("FX_MISSING_MAX_PCT", "5.0")),
+        help="Fail when percent of non-THB rows with fx_rate_status=default_1_missing_fx exceeds this threshold",
+    )
     args = parser.parse_args()
 
     try:
-        return run_checks(args.host, args.port, args.user, args.password, args.database)
+        return run_checks(args.host, args.port, args.user, args.password, args.database, args.fx_missing_max_pct)
     except pymysql.MySQLError as exc:
         print(f"DB error: {exc}", file=sys.stderr)
         return 2

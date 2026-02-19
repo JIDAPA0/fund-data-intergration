@@ -6,6 +6,7 @@ from sqlalchemy import text
 from sqlalchemy.engine import Engine
 from sqlalchemy.engine.url import make_url
 
+from .config import FX_TABLE
 from .models import Dataset
 
 
@@ -34,7 +35,23 @@ def load_df(engine: Engine, sql: str) -> pd.DataFrame:
         return pd.read_sql(text(sql), conn)
 
 
-def load_source_data(thai_engine: Engine, global_engine: Engine) -> Dataset:
+def table_exists(engine: Engine, table_name: str) -> bool:
+    with engine.connect() as conn:
+        row = conn.execute(
+            text(
+                """
+                SELECT COUNT(*) AS c
+                FROM information_schema.tables
+                WHERE table_schema = DATABASE()
+                  AND table_name = :table_name
+                """
+            ),
+            {"table_name": table_name},
+        ).fetchone()
+    return bool(row and int(row[0]) > 0)
+
+
+def load_source_data(thai_engine: Engine, global_engine: Engine, fx_engine: Engine) -> Dataset:
     thai_funds = load_df(
         thai_engine,
         """
@@ -211,6 +228,25 @@ def load_source_data(thai_engine: Engine, global_engine: Engine) -> Dataset:
         """,
     )
 
+    if table_exists(fx_engine, FX_TABLE):
+        fx_rates = load_df(
+            fx_engine,
+            f"""
+            SELECT
+                date_rate,
+                UPPER(TRIM(from_ccy)) AS from_ccy,
+                UPPER(TRIM(to_ccy)) AS to_ccy,
+                rate_to_thb,
+                source_system
+            FROM {FX_TABLE}
+            WHERE to_ccy = 'THB'
+            """,
+        )
+    else:
+        fx_rates = pd.DataFrame(
+            columns=["date_rate", "from_ccy", "to_ccy", "rate_to_thb", "source_system"]
+        )
+
     return Dataset(
         thai_funds=thai_funds,
         thai_isin=thai_isin,
@@ -221,4 +257,5 @@ def load_source_data(thai_engine: Engine, global_engine: Engine) -> Dataset:
         ft_sector=ft_sector,
         ft_region=ft_region,
         ft_return=ft_return,
+        fx_rates=fx_rates,
     )

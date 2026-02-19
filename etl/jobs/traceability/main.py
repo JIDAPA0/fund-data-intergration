@@ -4,7 +4,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.engine.url import make_url
 
 from .calculations import build_exposure_tables
-from .config import GLOBAL_DB_URI, MART_DB_URI, THAI_DB_URI
+from .config import FX_DB_URI, GLOBAL_DB_URI, MART_DB_URI, THAI_DB_URI
 from .loaders import create_db_if_needed, load_source_data
 from .mapping import build_bridge
 from .writer import create_views, print_summary, write_tables
@@ -17,9 +17,10 @@ def main() -> int:
     thai_engine = create_engine(THAI_DB_URI)
     global_engine = create_engine(GLOBAL_DB_URI)
     mart_engine = create_engine(MART_DB_URI)
+    fx_engine = create_engine(FX_DB_URI)
 
     print("Loading raw datasets...")
-    ds = load_source_data(thai_engine, global_engine)
+    ds = load_source_data(thai_engine, global_engine, fx_engine)
 
     print("Building bridge and exposure tables...")
     bridge = build_bridge(ds)

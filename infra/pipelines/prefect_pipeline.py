@@ -29,6 +29,7 @@ def validate_files(import_thai_dump: bool, thai_dump_path: str) -> None:
     logger = get_run_logger()
     required = [
         ROOT / "etl" / "jobs" / "build_traceability_mart.py",
+        ROOT / "etl" / "tools" / "fetch_daily_fx_rates.py",
         ROOT / "sql" / "api" / "funds_API.sql",
         ROOT / "etl" / "jobs" / "export_dashboard_payload.py",
     ]
@@ -58,6 +59,7 @@ def fund_data_auto_pipeline(
     mysql_port = int(os.getenv("MYSQL_PORT", str(mysql_port)))
     mysql_user = os.getenv("MYSQL_USER", mysql_user)
     mysql_password = os.getenv("MYSQL_PASSWORD", mysql_password)
+    mart_db_name = os.getenv("MART_DB_NAME", "fund_traceability")
 
     logger.info("Starting pipeline for host=%s port=%s", mysql_host, mysql_port)
     validate_files(import_thai_dump, thai_dump_path)
@@ -81,7 +83,41 @@ def fund_data_auto_pipeline(
             ]
         )
 
+    # Refresh daily FX rates before build so NAV conversion can use latest rates.
+    run_cmd(
+        [
+            sys.executable,
+            str(ROOT / "etl" / "tools" / "fetch_daily_fx_rates.py"),
+            "--host",
+            mysql_host,
+            "--port",
+            str(mysql_port),
+            "--user",
+            mysql_user,
+            "--password",
+            mysql_password,
+            "--database",
+            mart_db_name,
+        ]
+    )
+
     run_cmd([sys.executable, str(ROOT / "etl" / "jobs" / "build_traceability_mart.py")])
+    run_cmd(
+        [
+            sys.executable,
+            str(ROOT / "etl" / "tools" / "sanity_check_traceability.py"),
+            "--host",
+            mysql_host,
+            "--port",
+            str(mysql_port),
+            "--user",
+            mysql_user,
+            "--password",
+            mysql_password,
+            "--database",
+            mart_db_name,
+        ]
+    )
 
     run_cmd(
         [
