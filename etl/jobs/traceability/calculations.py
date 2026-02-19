@@ -45,9 +45,10 @@ def build_exposure_tables(ds: Dataset, bridge: pd.DataFrame) -> dict[str, pd.Dat
     exp_stock["true_weight_pct"] = (exp_stock["feeder_weight_pct_norm"] * exp_stock["portfolio_weight_pct"]) / 100.0
 
     nav = ds.thai_nav_aum.copy()
-    nav["aum"] = to_float(nav["aum"])
+    nav["aum"] = to_float(nav["aum"]).fillna(0.0)
     exp_stock = exp_stock.merge(nav, on="fund_code", how="left")
-    exp_stock["true_value_thb"] = (exp_stock["aum"] * exp_stock["true_weight_pct"]) / 100.0
+    exp_stock["aum"] = to_float(exp_stock["aum"]).fillna(0.0)
+    exp_stock["true_value_thb"] = ((exp_stock["aum"] * exp_stock["true_weight_pct"]) / 100.0).fillna(0.0)
 
     exp_stock = exp_stock[[
         "fund_code",
@@ -81,7 +82,8 @@ def build_exposure_tables(ds: Dataset, bridge: pd.DataFrame) -> dict[str, pd.Dat
     exp_sector = bridge_ok.merge(ft_sector, on="ticker", how="inner")
     exp_sector["true_weight_pct"] = (exp_sector["feeder_weight_pct_norm"] * exp_sector["weight_pct"]) / 100.0
     exp_sector = exp_sector.merge(nav, on="fund_code", how="left")
-    exp_sector["true_value_thb"] = (exp_sector["aum"] * exp_sector["true_weight_pct"]) / 100.0
+    exp_sector["aum"] = to_float(exp_sector["aum"]).fillna(0.0)
+    exp_sector["true_value_thb"] = ((exp_sector["aum"] * exp_sector["true_weight_pct"]) / 100.0).fillna(0.0)
     exp_sector = exp_sector[[
         "fund_code",
         "ft_ticker",
@@ -105,7 +107,8 @@ def build_exposure_tables(ds: Dataset, bridge: pd.DataFrame) -> dict[str, pd.Dat
     exp_region = bridge_ok.merge(ft_region, on="ticker", how="inner")
     exp_region["true_weight_pct"] = (exp_region["feeder_weight_pct_norm"] * exp_region["weight_pct"]) / 100.0
     exp_region = exp_region.merge(nav, on="fund_code", how="left")
-    exp_region["true_value_thb"] = (exp_region["aum"] * exp_region["true_weight_pct"]) / 100.0
+    exp_region["aum"] = to_float(exp_region["aum"]).fillna(0.0)
+    exp_region["true_value_thb"] = ((exp_region["aum"] * exp_region["true_weight_pct"]) / 100.0).fillna(0.0)
     exp_region["is_country_like"] = exp_region["category_name"].map(is_country_label)
     exp_region = exp_region[[
         "fund_code",

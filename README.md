@@ -70,10 +70,25 @@ python -c "from infra.pipelines.prefect_pipeline import fund_data_auto_pipeline;
 python -c "from infra.pipelines.prefect_pipeline import fund_data_auto_pipeline; fund_data_auto_pipeline(import_thai_dump=True, thai_dump_path='data/dumps/อะไรก็ได้ที่ไม่เหมือนเดิม.sql')"
 ```
 
+## Validation (PASS/FAIL)
+
+Run sanity checks against mart database:
+
+```bash
+python etl/tools/sanity_check_traceability.py --host 127.0.0.1 --port 3307 --user root --password '' --database fund_traceability
+```
+
+Run SQL checks directly:
+
+```bash
+python etl/tools/mysql_apply_sql.py sql/validation/traceability_validation.sql --host 127.0.0.1 --port 3307 --user root --password ''
+```
+
 ## Useful scripts
 
 - `etl/tools/mysql_apply_sql.py` -> apply any SQL file with MySQL multi-statements
 - `etl/tools/import_sql_dump.py` -> stream-import large SQL dump into target DB
+- `etl/tools/sanity_check_traceability.py` -> one-shot PASS/FAIL validation for mart outputs
 - `infra/pipelines/prefect_pipeline.py` -> main orchestrated Prefect flow
 - `etl/jobs/build_traceability_mart.py` -> build mart tables/views
 - `etl/jobs/export_dashboard_payload.py` -> export payload for demo dashboard
@@ -89,6 +104,7 @@ python -c "from infra.pipelines.prefect_pipeline import fund_data_auto_pipeline;
 - `etl/tools/` -> helper tools for SQL import/apply/build
 - `infra/pipelines/` -> orchestration flows
 - `sql/api/` -> API SQL files
+- `sql/validation/` -> SQL validation checks for mart quality
 - `sql/schema/` -> schema SQL files
 - `docs/` -> additional documentation
 
